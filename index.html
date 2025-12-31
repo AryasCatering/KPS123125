@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Production - December 31, 2025</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; padding-bottom: 100px; }
+        .header { background: #000; color: white; padding: 20px; text-align: center; border-radius: 8px; margin-bottom: 20px; }
+        .header h1 { font-size: 24pt; margin: 10px 0; }
+        .summary { background: #fff3cd; border: 3px solid #ff9800; padding: 15px; margin-bottom: 20px; border-radius: 8px; text-align: center; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 10px; }
+        .stat { background: white; border: 2px solid #2c3e50; padding: 10px; border-radius: 6px; }
+        .stat-value { font-size: 24pt; font-weight: bold; color: #2c3e50; }
+        .stat-label { font-size: 8pt; color: #666; text-transform: uppercase; margin-top: 3px; }
+        .progress-bar { width: 100%; height: 25px; background: #e0e0e0; border-radius: 15px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #4caf50, #2e7d32); width: 0%; transition: width 0.3s ease; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 11pt; }
+        .time-group { margin-bottom: 25px; }
+        .time-header { background: #2c3e50; color: white; padding: 12px 15px; font-size: 14pt; font-weight: bold; border-radius: 6px; margin-bottom: 12px; display: flex; justify-content: space-between; }
+        .order-card { background: white; border: 3px solid #ddd; margin-bottom: 15px; border-radius: 8px; overflow: hidden; transition: border 0.3s; }
+        .order-card.completed { border-color: #4caf50; opacity: 0.7; }
+        .order-header { background: linear-gradient(135deg, #2c3e50, #34495e); color: white; padding: 12px 15px; display: grid; grid-template-columns: 35px 1fr 120px 35px; gap: 12px; align-items: center; cursor: pointer; }
+        .order-checkbox { width: 32px; height: 32px; border: 3px solid white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; background: white; color: #4caf50; }
+        .order-title h3 { font-size: 13pt; margin-bottom: 3px; }
+        .order-title p { font-size: 9pt; opacity: 0.9; }
+        .delivery-badge { background: #fff3cd; color: #000; padding: 8px; border-radius: 5px; text-align: center; font-weight: bold; font-size: 9pt; }
+        .expand-btn { width: 32px; height: 32px; background: rgba(255,255,255,0.2); border: 2px solid white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: white; }
+        .order-details { padding: 15px; display: none; background: #f9f9f9; }
+        .order-details.show { display: block; }
+        .order-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 15px; padding: 12px; background: white; border-radius: 6px; border: 2px solid #e0e0e0; }
+        .info-item { font-size: 9.5pt; }
+        .info-label { font-weight: bold; color: #666; margin-bottom: 2px; font-size: 8.5pt; }
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 8.5pt; font-weight: bold; margin-top: 3px; }
+        .status-paid { background: #e8f5e9; color: #2e7d32; }
+        .status-cod { background: #fff3e0; color: #e65100; }
+        .status-balance { background: #fff9c4; color: #f57f17; }
+        .status-pickup { background: #e1f5fe; color: #0277bd; }
+        .menu-title { background: #2c3e50; color: white; padding: 8px 12px; font-size: 11pt; font-weight: bold; border-radius: 4px; margin: 10px 0 8px 0; }
+        .menu-list { background: white; border: 2px solid #e0e0e0; border-radius: 6px; padding: 12px; }
+        .menu-item { padding: 6px 10px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
+        .menu-item:last-child { border-bottom: none; }
+        .item-left { flex-grow: 1; }
+        .item-name { font-weight: 600; font-size: 10pt; color: #000; }
+        .item-details { font-size: 8.5pt; color: #666; margin-top: 2px; }
+        .item-price { font-weight: bold; font-size: 10pt; color: #1565c0; white-space: nowrap; margin-left: 12px; }
+        .controls { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; }
+        .btn { background: #2c3e50; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 10pt; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2); white-space: nowrap; }
+        .btn:hover { background: #1a252f; }
+        .btn-reset { background: #c62828; }
+        .expand-all { background: #2196f3; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🍽️ KITCHEN PRODUCTION DASHBOARD</h1>
+        <p>December 31, 2025 • 19 Orders</p>
+    </div>
+    
+    <div class="summary">
+        <h2 style="font-size: 14pt; margin-bottom: 10px;">📊 Progress Tracker</h2>
+        <div class="stats">
+            <div class="stat"><div class="stat-value" id="total-orders">19</div><div class="stat-label">Total Orders</div></div>
+            <div class="stat"><div class="stat-value" id="completed-orders">0</div><div class="stat-label">Completed</div></div>
+            <div class="stat"><div class="stat-value" id="remaining-orders">19</div><div class="stat-label">Remaining</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill">0%</div></div>
+    </div>
+
+    <!-- GROUP 1 -->
+    <div class="time-group">
+        <div class="time-header"><span>⏰ GROUP 1 - AFTERNOON (3-5 PM)</span><span id="g1">0/8</span></div>
+        
+        <div class="order-card" data-order="1">
+            <div class="order-header" onclick="toggleDetails(1)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>1. MAAN MASESAR</h3><p>PICKUP • Bundle 8 • ₱4,880</p></div>
+                <div class="delivery-badge">3:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-1">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Contact:</div>0998-5976226</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-pickup">FOR PICKUP</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>1:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 Bundle 8 (10-12 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Herbs Roast Beef</div><div class="item-details">BEEF • 10-12 PAX</div></div><div class="item-price">₱1,950</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Bagnet Kare-Kare (w/ Bagoong)</div><div class="item-details">PORK • 10-12 PAX</div></div><div class="item-price">₱1,950</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Chicken Cordon Bleu</div><div class="item-details">CHICKEN • 10-12 PAX</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Steamed Rice + 1.5L Coke</div><div class="item-details">INCLUDED</div></div><div class="item-price">-</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="2">
+            <div class="order-header" onclick="toggleDetails(2)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>2. NORBERTO ROXAS</h3><p>Remmanville • 3 trays • ₱4,850</p></div>
+                <div class="delivery-badge">4:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-2">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>39 La Naval St., Remmanville</div>
+                    <div class="info-item"><div class="info-label">Contact:</div>09278137310 • Pia Ofiana</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-paid">✅ FULLY PAID - BPI</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>2:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 Food Trays (All 10-12 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Caesar Salad</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Herbs Roast Chicken w/ Mushroom Gravy</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Beef Salpicao w/ Butter Corn & Carrots</div></div><div class="item-price">₱1,850</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="3">
+            <div class="order-header" onclick="toggleDetails(3)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>3. JAY LOOD</h3><p>Bacoor, Cavite • 7 items • ₱7,880</p></div>
+                <div class="delivery-badge">4:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-3">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>Avida Settings, Molino IV, Bacoor</div>
+                    <div class="info-item"><div class="info-label">Contact:</div>09179649794</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-balance">HALF BALANCE: ₱3,940</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>2:00 PM</div>
+                </div>
+                <div class="menu-title">🍱 Food Items (10-12 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Chicken Cordon Bleu</div></div><div class="item-price">₱7,880</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Herbs Roast Beef</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Bagnet Kare-Kare (w/ Bagoong)</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Baked Mac w/ Bechamel</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Lumpiang Shanghai</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Steamed Rice + 1.5L Coke</div></div><div class="item-price">-</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="4">
+            <div class="order-header" onclick="toggleDetails(4)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>4. MIKEE JUICO (Jex)</h3><p>Taguig • Bundle 5 • ₱14,880</p></div>
+                <div class="delivery-badge">4:30 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-4">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Contact:</div>09176272728</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-paid">✅ FULLY PAID - LALAMOVE</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>3:00 PM</div>
+                </div>
+                <div class="menu-title">🍱 Bundle 5 (10-12 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Beef Stroganoff</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Buffalo Chicken Wings</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Hickory Grilled Liempo</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Mushroom Truffle Pasta</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Lumpiang Shanghai</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Steamed Rice + 1.5L Coke</div></div><div class="item-price">-</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="5">
+            <div class="order-header" onclick="toggleDetails(5)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>5. VANNIE DEL ROSARIO</h3><p>Paranaque • 12 items • ₱18,110</p></div>
+                <div class="delivery-badge">5:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-5">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>18 Pakistan St., Better Living</div>
+                    <div class="info-item"><div class="info-label">Contact:</div>09176371529</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-balance">HALF BALANCE: ₱8,110</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>3:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 Large Order - 12 Items (10-12 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Caesar Salad</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Chicken Cordon Bleu</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Herbs Roast Beef</div></div><div class="item-price">₱7,880</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Bagnet Kare-Kare (w/ Bagoong)</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">HK Pancit</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Lumpiang Shanghai</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Chicken Truffle Parmigiana</div></div><div class="item-price">₱6,880</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Beef Salpicao</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Pork Menudo</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Herbs Garlic Shrimp Pasta</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Garlic Butter Shrimp</div></div><div class="item-price">₱1,850</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Steamed Rice (2) + Coke (2)</div></div><div class="item-price">-</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="6">
+            <div class="order-header" onclick="toggleDetails(6)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>6. VALERIE CHONG</h3><p>PICKUP • 6 trays • ₱9,950</p></div>
+                <div class="delivery-badge">5:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-6">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>7 Buenviaje St., San Antonio Valley 3</div>
+                    <div class="info-item"><div class="info-label">Contact:</div>09154132016</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-paid">✅ FULLY PAID</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>3:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 6 Trays (10-12 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Lechon Macau w/ Sweet Soy Sauce</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Chopsuey Oriental</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Ham & Bacon Carbonara</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Sweet & Sour Fish</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Lumpiang Shanghai</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">8-HR Roast Beef w/ Garlic Herb Potatoes</div></div><div class="item-price">-</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="7">
+            <div class="order-header" onclick="toggleDetails(7)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>7. ROSE CAHUTAY</h3><p>PICKUP • 4 trays • ₱6,450</p></div>
+                <div class="delivery-badge">5:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-7">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>Santos Compound</div>
+                    <div class="info-item"><div class="info-label">Contact:</div>0991 3243941</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-paid">✅ FREE VOUCHER - PAID</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>3:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 4 Trays (10-12 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Beef Broccoli in Oyster Sauce</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Garlic Butter Shrimp</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Lumpiang Shanghai</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Chicken Cordon Bleu</div></div><div class="item-price">-</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="8">
+            <div class="order-header" onclick="toggleDetails(8)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>8. CHAMY MADRID</h3><p>BLS • Seafood • ₱3,350</p></div>
+                <div class="delivery-badge">5:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-8">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>15-D Ghana St., Section 4, BLS</div>
+                    <div class="info-item"><div class="info-label">Contact:</div>09175995337 • Pia Ofiana</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-balance">HALF BALANCE: ₱1,675</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>3:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 Seafood Trays (10-12 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Steamed Oriental Lapu Lapu</div></div><div class="item-price">₱1,850</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Cheesy Baked Tahong</div></div><div class="item-price">₱1,500</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GROUP 2 -->
+    <div class="time-group">
+        <div class="time-header"><span>⏰ GROUP 2 - EVENING EARLY (6-7 PM)</span><span id="g2">0/6</span></div>
+        
+        <div class="order-card" data-order="9">
+            <div class="order-header" onclick="toggleDetails(9)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>9. EENA ARCAYA (Raffy)</h3><p>Paranaque • Bundle 6 • ₱7,980</p></div>
+                <div class="delivery-badge">6:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-9">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>32 Vietnam St. (Somalia), Paranaque</div>
+                    <div class="info-item"><div class="info-label">Contact:</div>09175380318</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-cod">💵 COD</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>4:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 Bundle 6 (10-12 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Cajun Butter Shrimp</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Ham & Bacon Carbonara</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Texas Cajun Baby Back Ribs</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Chicken Truffle Parmigiana</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Free Coke + Steamed Rice</div></div><div class="item-price">-</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="10">
+            <div class="order-header" onclick="toggleDetails(10)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>10. DIREK ROMM BURLAT 💖</h3><p>Glory Hotel Cubao • Media Noche</p></div>
+                <div class="delivery-badge">6-9 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-10">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>Rm 8320, Glory Hotel Cubao, QC</div>
+                    <div class="info-item"><div class="info-label">Contact:</div>09292242467</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-balance">TBD</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>4:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 Media Noche Bundle (6 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Baked Mac</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Lechon Roll</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Beef Salpicao OR Roast Beef (Choice)</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Cordon Bleu</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Garlic Butter Shrimps OR Fish Fillet (Choice)</div></div><div class="item-price">-</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="11">
+            <div class="order-header" onclick="toggleDetails(11)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>11. KRISTIAN YBAROLA</h3><p>Paranaque • 4 trays + Equipment • ₱13,500</p></div>
+                <div class="delivery-badge">7:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-11">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>B4 L26-27 Annex-35 Subd</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-balance">HALF BALANCE: ₱6,750</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>5:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 4 Trays (20-24 PAX) + Equipment</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Beefy Baked Macaroni</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Lechon Macau</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Beef Salpicao w/ Buttered Corn & Carrots</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Sweet & Sour Fish Fillet</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">⚠️ EQUIPMENT: Chairs & Tables</div></div><div class="item-price">-</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="12">
+            <div class="order-header" onclick="toggleDetails(12)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>12. KATH MISA</h3><p>Paranaque • 3 trays + Rentals • ₱10,000+</p></div>
+                <div class="delivery-badge">7:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-12">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>8 Emerald St., South Green Park</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-balance">HALF BALANCE: ₱5,000+</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>5:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 3 Trays (20-24 PAX) + Rentals</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Buffalo Wings w/ Fries</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Beef Salpicao w/ Buttered Corn & Carrots</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Bagnet Kare-Kare w/ Bagoong</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">⚠️ ADDITIONAL RENTALS</div></div><div class="item-price">-</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="13">
+            <div class="order-header" onclick="toggleDetails(13)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>13. SEAN ANDREASSEN</h3><p>PICKUP • Bundle 8 • ₱4,880</p></div>
+                <div class="delivery-badge">7:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-13">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Contact:</div>09190792996</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-cod">💵 COD</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>5:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 Bundle 8 (10-12 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Herbs Roast Beef</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Bagnet Kare-Kare (w/ Bagoong)</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Chicken Cordon Bleu</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Steamed Rice + 1.5L Coke</div></div><div class="item-price">-</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="14">
+            <div class="order-header" onclick="toggleDetails(14)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>14. RALPH ARNIGO (Raffy)</h3><p>1 tray • ₱1,950</p></div>
+                <div class="delivery-badge">5-7 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-14">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Contact:</div>09662893919</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-cod">💵 COD</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>4:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 1 Tray (10-12 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Bagnet Kare-Kare w/ Bagoong</div></div><div class="item-price">₱1,950</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GROUP 3 -->
+    <div class="time-group">
+        <div class="time-header"><span>⏰ GROUP 3 - EVENING LATE (8:00 PM)</span><span id="g3">0/5</span></div>
+        
+        <div class="order-card" data-order="15">
+            <div class="order-header" onclick="toggleDetails(15)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>15. KEITH DURAN</h3><p>Paranaque • 6 items • ₱13,250</p></div>
+                <div class="delivery-badge">8:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-15">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>101 Happiness St. Annex 1618 Don Bosco</div>
+                    <div class="info-item"><div class="info-label">Contact:</div>09167079231</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-balance">HALF BALANCE: ₱6,625</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>6:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 6 Items (Mixed PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Herbs Roast Beef (10-12 PAX)</div></div><div class="item-price">₱1,950</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Bagnet Kare-Kare (10-12 PAX)</div></div><div class="item-price">₱1,950</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Chicken Cordon Bleu (20-24 PAX)</div></div><div class="item-price">₱2,800</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Garlic Truffle Mushroom Penne (10-12 PAX)</div></div><div class="item-price">₱1,750</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Cheesy Baked Tahong (10-12 PAX)</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Garlic Butter Shrimp (20-24 PAX)</div></div><div class="item-price">₱3,300</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="16">
+            <div class="order-header" onclick="toggleDetails(16)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>16. LORIELAI DEVARAS / DES DEGUZMAN ⭐</h3><p>QC • 21 ITEMS! • ₱39,200</p></div>
+                <div class="delivery-badge">8:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-16">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>The City Oasis Kamuning, QC</div>
+                    <div class="info-item"><div class="info-label">Contact:</div>09053858527</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-balance">HALF BALANCE: ₱19,600</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>6:00 PM</div>
+                </div>
+                <div class="menu-title">🍱 LARGEST ORDER - 21 Items (10-12 PAX each)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">8 Hours Roast Beef w/ Herb Potatoes</div></div><div class="item-price">₱1,950</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Classic Cheesy Caldereta</div></div><div class="item-price">₱1,750</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Braised Beef Oriental Style</div></div><div class="item-price">₱1,850</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Lumpiang Shanghai (20-25 PAX)</div></div><div class="item-price">₱2,600</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Sisig Pampanga</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Chopsuey Oriental</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Pinoy Pakbet</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Caesar Salad</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Holiday Macaroni Salad</div></div><div class="item-price">₱1,750</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">HK Style Canton-Bihon Guisado</div></div><div class="item-price">₱1,700</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Garlic Butter Shrimp (20-25 PAX)</div></div><div class="item-price">₱3,300</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Chicken Pesto Truffle Pasta</div></div><div class="item-price">₱1,850</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Bagnet Kare-Kare</div></div><div class="item-price">₱1,950</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Texas Cajun Baby Back Ribs</div></div><div class="item-price">₱1,650</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Crispy Calamares</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Baked Tahong</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Buffalo Wings w/ Fries (20-25 PAX)</div></div><div class="item-price">₱2,900</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Beef with Broccoli</div></div><div class="item-price">₱1,850</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Beef Salpicao w/ Buttered Corn & Carrots</div></div><div class="item-price">₱1,850</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Quesadilla Platter</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Grilled Giant Squid</div></div><div class="item-price">₱1,750</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="17">
+            <div class="order-header" onclick="toggleDetails(17)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>17. RUFFA DELGADO</h3><p>PICKUP • Bundle 8 • ₱7,800</p></div>
+                <div class="delivery-badge">8:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-17">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>35 Emerald St., Betterliving</div>
+                    <div class="info-item"><div class="info-label">Contact:</div>09178186664</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-pickup">FOR PICKUP - FULL PAYMENT</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>6:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 Bundle 8 (20-24 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Herbs Roast Beef</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Bagnet Kare-Kare (w/ Bagoong)</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Chicken Cordon Bleu</div></div><div class="item-price">-</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Steamed Rice + 1.5L Coke</div></div><div class="item-price">-</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="18">
+            <div class="order-header" onclick="toggleDetails(18)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>18. SHINE</h3><p>Pasay • 6 trays • ₱8,130</p></div>
+                <div class="delivery-badge">8:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-18">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>33 Jasmin St., Phase 5, San Roque, Pasay</div>
+                    <div class="info-item"><div class="info-label">Contact:</div>09772451117</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-balance">HALF BALANCE: ₱4,130</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>6:30 PM</div>
+                </div>
+                <div class="menu-title">🍱 6 Trays (10-12 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Lechon Macau</div></div><div class="item-price">₱1,750</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Chicken Cordon Bleu</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Lumpiang Shanghai</div></div><div class="item-price">₱1,250</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Ham & Bacon Carbonara</div></div><div class="item-price">₱1,750</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Classic Beef Caldereta</div></div><div class="item-price">₱1,880</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Steamed Rice</div></div><div class="item-price">-</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card" data-order="19">
+            <div class="order-header" onclick="toggleDetails(19)">
+                <div class="order-checkbox" onclick="event.stopPropagation(); toggleOrder(this)"></div>
+                <div class="order-title"><h3>19. DAINE MIAO</h3><p>BLS • 4 trays • ₱6,450</p></div>
+                <div class="delivery-badge">8:00 PM</div>
+                <div class="expand-btn">▼</div>
+            </div>
+            <div class="order-details" id="details-19">
+                <div class="order-info-grid">
+                    <div class="info-item"><div class="info-label">Venue:</div>197a Felicity St. Annex 34, BLS</div>
+                    <div class="info-item"><div class="info-label">Contact:</div>09171627154 • Pia Ofiana</div>
+                    <div class="info-item"><div class="info-label">Payment:</div><span class="status-badge status-balance">HALF BALANCE: ₱3,225</span></div>
+                    <div class="info-item"><div class="info-label">Ready:</div>6:00 PM</div>
+                </div>
+                <div class="menu-title">🍱 4 Trays (10-12 PAX)</div>
+                <div class="menu-list">
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Truffle Garlic Mixed Mushrooms</div></div><div class="item-price">₱1,250</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Garlic Buttered Shrimp</div></div><div class="item-price">₱1,850</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Cheesy Baked Tahong</div></div><div class="item-price">₱1,500</div></div>
+                    <div class="menu-item"><div class="item-left"><div class="item-name">Beef Salpicao</div></div><div class="item-price">₱1,850</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn expand-all" onclick="toggleAllOrders()">Expand All</button>
+        <button class="btn btn-reset" onclick="resetAll()">Reset All</button>
+        <button class="btn" onclick="saveProgress()">💾 Save</button>
+    </div>
+
+    <script>
+        let allExpanded = false;
+        
+        window.onload = function() {
+            loadProgress();
+            updateStats();
+        };
+        
+        function toggleDetails(orderId) {
+            const details = document.getElementById('details-' + orderId);
+            const btn = details.previousElementSibling.querySelector('.expand-btn');
+            details.classList.toggle('show');
+            btn.textContent = details.classList.contains('show') ? '▲' : '▼';
+        }
+        
+        function toggleAllOrders() {
+            const allDetails = document.querySelectorAll('.order-details');
+            const allBtns = document.querySelectorAll('.expand-btn');
+            allExpanded = !allExpanded;
+            
+            allDetails.forEach((detail, i) => {
+                if (allExpanded) {
+                    detail.classList.add('show');
+                    allBtns[i].textContent = '▲';
+                } else {
+                    detail.classList.remove('show');
+                    allBtns[i].textContent = '▼';
+                }
+            });
+            
+            event.target.textContent = allExpanded ? 'Collapse All' : 'Expand All';
+        }
+        
+        function toggleOrder(checkbox) {
+            const card = checkbox.closest('.order-card');
+            const isCompleted = card.classList.contains('completed');
+            
+            if (isCompleted) {
+                card.classList.remove('completed');
+                checkbox.innerHTML = '';
+            } else {
+                card.classList.add('completed');
+                checkbox.innerHTML = '✓';
+            }
+            
+            updateStats();
+            saveProgress();
+        }
+        
+        function updateStats() {
+            const total = 19;
+            const completed = document.querySelectorAll('.order-card.completed').length;
+            const remaining = total - completed;
+            const percentage = Math.round((completed / total) * 100);
+            
+            document.getElementById('total-orders').textContent = total;
+            document.getElementById('completed-orders').textContent = completed;
+            document.getElementById('remaining-orders').textContent = remaining;
+            
+            const progressFill = document.getElementById('progress-fill');
+            progressFill.style.width = percentage + '%';
+            progressFill.textContent = percentage + '%';
+            
+            // Group counts
+            updateGroupCount('g1', 1, 8);
+            updateGroupCount('g2', 9, 14);
+            updateGroupCount('g3', 15, 19);
+        }
+        
+        function updateGroupCount(elementId, start, end) {
+            let completed = 0;
+            const total = end - start + 1;
+            
+            for (let i = start; i <= end; i++) {
+                const card = document.querySelector(`[data-order="${i}"]`);
+                if (card && card.classList.contains('completed')) {
+                    completed++;
+                }
+            }
+            
+            document.getElementById(elementId).textContent = completed + '/' + total;
+        }
+        
+        function saveProgress() {
+            const completedOrders = [];
+            document.querySelectorAll('.order-card.completed').forEach(card => {
+                completedOrders.push(card.getAttribute('data-order'));
+            });
+            localStorage.setItem('kitchen_dec31', JSON.stringify(completedOrders));
+        }
+        
+        function loadProgress() {
+            const saved = localStorage.getItem('kitchen_dec31');
+            if (saved) {
+                const completedOrders = JSON.parse(saved);
+                completedOrders.forEach(orderId => {
+                    const card = document.querySelector(`[data-order="${orderId}"]`);
+                    if (card) {
+                        card.classList.add('completed');
+                        card.querySelector('.order-checkbox').innerHTML = '✓';
+                    }
+                });
+            }
+        }
+        
+        function resetAll() {
+            if (confirm('Reset all checkboxes? This will clear your progress.')) {
+                document.querySelectorAll('.order-card').forEach(card => {
+                    card.classList.remove('completed');
+                    card.querySelector('.order-checkbox').innerHTML = '';
+                });
+                localStorage.removeItem('kitchen_dec31');
+                updateStats();
+            }
+        }
+    </script>
+</body>
+</html>
