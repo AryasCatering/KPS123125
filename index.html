@@ -567,8 +567,23 @@
     <div class="controls">
         <button class="btn expand-all" onclick="toggleAllOrders()">Expand All</button>
         <button class="btn btn-reset" onclick="resetAll()">Reset All</button>
-        <button class="btn" onclick="saveProgress()">💾 Save</button>
+        <button class="btn" id="save-btn" onclick="manualSave()">💾 Save</button>
     </div>
+    
+    <div id="notification" style="display: none; position: fixed; top: 20px; right: 20px; background: #4caf50; color: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 2000; font-weight: bold; animation: slideIn 0.3s ease;">
+        ✅ Progress Saved!
+    </div>
+    
+    <style>
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+    </style>
 
     <script>
         let allExpanded = false;
@@ -658,7 +673,56 @@
             document.querySelectorAll('.order-card.completed').forEach(card => {
                 completedOrders.push(card.getAttribute('data-order'));
             });
-            localStorage.setItem('kitchen_dec31', JSON.stringify(completedOrders));
+            
+            try {
+                localStorage.setItem('kitchen_dec31', JSON.stringify(completedOrders));
+                console.log('Auto-saved:', completedOrders);
+                return true;
+            } catch(e) {
+                console.error('Save failed:', e);
+                return false;
+            }
+        }
+        
+        function manualSave() {
+            const saved = saveProgress();
+            const notification = document.getElementById('notification');
+            const saveBtn = document.getElementById('save-btn');
+            
+            if (saved !== false) {
+                // Show success notification
+                notification.style.display = 'block';
+                notification.style.animation = 'slideIn 0.3s ease';
+                
+                // Button feedback
+                saveBtn.textContent = '✅ Saved!';
+                saveBtn.style.background = '#4caf50';
+                
+                // Hide notification after 2 seconds
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        notification.style.display = 'none';
+                    }, 300);
+                }, 2000);
+                
+                // Reset button after 2 seconds
+                setTimeout(() => {
+                    saveBtn.textContent = '💾 Save';
+                    saveBtn.style.background = '#2c3e50';
+                }, 2000);
+            } else {
+                // Show error
+                notification.textContent = '❌ Save Failed!';
+                notification.style.background = '#c62828';
+                notification.style.display = 'block';
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                    notification.textContent = '✅ Progress Saved!';
+                    notification.style.background = '#4caf50';
+                }, 3000);
+            }
         }
         
         function loadProgress() {
